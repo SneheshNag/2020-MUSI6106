@@ -43,3 +43,6 @@ bld
 /bin
 /doc
 /lib
+
+
+.DS_Store
