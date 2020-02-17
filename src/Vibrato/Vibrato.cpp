@@ -10,9 +10,9 @@ Vibrato::Vibrato () :
 m_bIsInitialized(false),
 m_fSampleRate(0),
 m_iNumChannels(0),
-m_fWidthInSec(0),
-m_fFrequency(0),
-m_fMaxWidthInSec(0),
+m_width_sec(0),
+m_freq_Hz(0),
+m_max_width(0),
 m_ppCRingBuffer(0),
 m_pCLfo(0)
 {
@@ -47,12 +47,12 @@ Error_t Vibrato::destroy (Vibrato*& pCVibrato)
     return kNoError;
 }
 
-Error_t Vibrato::init (float fMaxWidthInSec, float fSampleRateInHz, int iNumChannels)
+Error_t Vibrato::init (float Max_width_sec, float Sample_Rate, int iNumChannels)
 {
-    m_fSampleRate = fSampleRateInHz;
+    m_fSampleRate = Sample_Rate;
     m_iNumChannels = iNumChannels;
-    m_fMaxWidthInSec = fMaxWidthInSec;
-    int iMaxWidthInSample = CUtil::float2int<int>(m_fMaxWidthInSec * m_fSampleRate);
+    m_max_width = Max_width_sec;
+    int iMaxWidthInSample = CUtil::float2int<int>(m_max_width * m_fSampleRate);
     
     m_ppCRingBuffer = new CRingBuffer<float>*[m_iNumChannels];
     for(int i=0; i<iNumChannels; i++)
@@ -66,11 +66,11 @@ Error_t Vibrato::init (float fMaxWidthInSec, float fSampleRateInHz, int iNumChan
     return kNoError;
 }
 
-Error_t Vibrato::initLfo ()
-{
-    m_pCLfo = new CLfo(m_fSampleRate, m_fWidthInSec , m_fFrequency);
-    return kNoError;
-}
+//Error_t Vibrato::initLfo ()
+//{
+//    m_pCLfo = new Clfo(m_fSampleRate, m_width_sec , m_freq_Hz);
+//    return kNoError;
+//}
 
 Error_t Vibrato::reset ()
 {
@@ -84,31 +84,33 @@ Error_t Vibrato::reset ()
     
     m_fSampleRate = 0;
     m_iNumChannels = 0;
-    m_fWidthInSec = 0;
-    m_fFrequency = 0;
-    m_fMaxWidthInSec = 0;
+    m_width_sec = 0;
+    m_freq_Hz = 0;
+    m_max_width = 0;
     
     m_bIsInitialized = false;
     
     return kNoError;
 }
 
-Error_t Vibrato::setParam (VibratoParam_t eParam, float fParamValue)
+Error_t Vibrato::setParam (param_list eParam, float fParamValue)
 {
     if (!m_bIsInitialized)
         return kNotInitializedError;
     
     switch (eParam)
     {
-        case kParamWidthInSec:
-            m_fWidthInSec = fParamValue;
-            if(m_fWidthInSec>m_fMaxWidthInSec){
+        case delay:
+            
+        case width:
+            m_width_sec = fParamValue;
+            if(m_width_sec>m_max_width){
                 return kFunctionInvalidArgsError;
             }
             break;
             
-        case kParamFrequency:
-            m_fFrequency = fParamValue;
+        case mod_freq:
+            m_freq_Hz = fParamValue;
             break;
     }
     return kNoError;
@@ -128,11 +130,11 @@ float   Vibrato::getParam (param_list eParam) const
     return kNoError;
 }
 
-Error_t C=Vibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
+Error_t Vibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames)
 {
     for(int i=0; i<iNumberOfFrames; i++)
     {
-        float fOffset = m_pCl   fo->getNextVal();
+        float fOffset = m_pCLfo->getNextSample();
         for (int j=0; j<m_iNumChannels; j++)
         {
             m_ppCRingBuffer[j]->putPostInc(ppfInputBuffer[j][i]);

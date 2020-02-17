@@ -29,7 +29,7 @@ public:
     
     static Error_t destroy (Vibrato*& pVibrato);
     
-    Error_t init (float fMaxWidthInSec, float fSampleRateInHz, int iNumChannels);
+    Error_t init (float Max_width_sec, float Sample_Rate, int iNumChannels);
     
     Error_t reset ();
     
@@ -52,28 +52,19 @@ protected:
     virtual ~Vibrato () {};
     
 private:
-//    int m_iNumChannels;
-//    float m_fSampleRate;
-//    
-//    float m_fDelayInSamples;
-//    float m_fWidthInSamples;
-//    float m_fModFreqInSamples;
-//    
-//    float m_fDelayLengthInSamples;
-//    CRingBuffer<float>  **m_ppCDelayLine;
-//    Clfo    **m_ppCLFO;
+
     
-    bool                m_bIsInitialized;   //!< internal bool to check whether the init function has been called
+    bool                m_bIsInitialized;
     
-    float               m_fSampleRate;      //!< audio sample rate in Hz
-    int                 m_iNumChannels;     //!< number of channels
+    float               m_fSampleRate;
+    int                 m_iNumChannels;
     
-    float               m_fWidthInSec;      //!< LFO modulation width in seconds
-    float               m_fFrequency;       //!< LFO modulation frequency in Hz
-    float               m_fMaxWidthInSec;   //!< FLO max modulation width in seconds
+    float               m_width_sec;
+    float               m_freq_Hz;
+    float               m_max_width;
     
-    CRingBuffer<float>  **m_ppCRingBuffer;  //!< ring buffer
-    Clfo                *m_pCLfo;           //!< LFO
+    CRingBuffer<float>  **m_ppCRingBuffer;
+    Clfo                *m_pCLfo;
 
 };
 
