@@ -55,8 +55,37 @@ SUITE(Vibrato)
         
     };
 
-    TEST_FIXTURE(VibratoData, TestName)
+    TEST_FIXTURE(VibratoData, VaryingBlockSize)
     {
+        m_pVibrato->setParam(Vibrato::mod_freq, 5);
+        m_pVibrato->setParam(Vibrato::width, 0.2);
+        m_pVibrato->initLfo();
+        
+        Testprocess();
+        
+        m_pVibrato->reset();
+        m_pVibrato->init(m_max_width,m_fSampleRate,m_iNumChannels);
+        m_pVibrato->setParam(Vibrato::mod_freq, 5);
+        m_pVibrato->setParam(Vibrato::width, 0.2);
+//        m_pVibrato->initLfo();
+        {
+            int iNumFramesRemaining = m_iDataLength;
+            while (iNumFramesRemaining > 0)
+            {
+                int iNumFrames = std::min(static_cast<float>(iNumFramesRemaining), static_cast<float>(rand())/RAND_MAX*17000.F);
+                
+                for (int c = 0; c < m_iNumChannels; c++)
+                {
+                    m_ppfInputTmp[c] = &m_ppfInputData[c][m_iDataLength - iNumFramesRemaining];
+                }
+                m_pVibrato->process(m_ppfInputTmp, m_ppfInputTmp, iNumFrames);
+                
+                iNumFramesRemaining -= iNumFrames;
+            }
+        }
+        
+        for (int c = 0; c < m_iNumChannels; c++)
+            CHECK_ARRAY_CLOSE(m_ppfInputData[c], m_ppfOutputData[c], m_iDataLength, 1e-3);
     }
 
 }

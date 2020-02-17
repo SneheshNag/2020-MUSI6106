@@ -39,12 +39,6 @@ public:
 
     float getParam (param_list eParam) const;
     
-    /*! processes one block of audio
-     \param ppfInputBuffer input buffer [numChannels][iNumberOfFrames]
-     \param ppfOutputBuffer output buffer [numChannels][iNumberOfFrames]
-     \param iNumberOfFrames buffer length (per channel)
-     \return Error_t
-     */
     Error_t process (float **ppfInputBuffer, float **ppfOutputBuffer, int iNumberOfFrames);
     
 protected:

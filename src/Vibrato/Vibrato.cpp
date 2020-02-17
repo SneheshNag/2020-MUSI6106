@@ -66,11 +66,11 @@ Error_t Vibrato::init (float Max_width_sec, float Sample_Rate, int iNumChannels)
     return kNoError;
 }
 
-//Error_t Vibrato::initLfo ()
-//{
-//    m_pCLfo = new Clfo(m_fSampleRate, m_width_sec , m_freq_Hz);
-//    return kNoError;
-//}
+Error_t Vibrato::initLfo ()
+{
+    m_pCLfo = new Clfo(m_fSampleRate, m_width_sec , m_freq_Hz);
+    return kNoError;
+}
 
 Error_t Vibrato::reset ()
 {
