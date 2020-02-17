@@ -6,6 +6,7 @@
 
 #include "AudioFileIf.h"
 //#include "CombFilterIf.h"
+#include "Vibrato.h"
 
 using std::cout;
 using std::endl;
@@ -25,10 +26,17 @@ int main(int argc, char* argv[])
     clock_t                 time = 0;
 
     float                   **ppfAudioData = 0;
+    float                   **ppfAudioOutput = 0;
 
+    CAudioFileIf            *phAudioFileOutput = 0;
     CAudioFileIf            *phAudioFile = 0;
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
+    Vibrato                 *pVibrato = 0;
+    
+    float delay_sec;
+    float width_sec;
+    float mod_freq_Hz;
 
     //CCombFilterIf   *pInstance = 0;
     //CCombFilterIf::create(pInstance);
@@ -43,8 +51,14 @@ int main(int argc, char* argv[])
     }
     else
     {
+        if (argc > 2)
+        {
+            delay_sec = atof(argv[2]);
+            width_sec = atof(argv[3]);
+            mod_freq_Hz = atof(argv[4]);
+        }
         sInputFilePath = argv[1];
-        sOutputFilePath = sInputFilePath + ".txt";
+        sOutputFilePath = sInputFilePath + ".wav";
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -60,26 +74,42 @@ int main(int argc, char* argv[])
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
-    hOutputFile.open(sOutputFilePath.c_str(), std::ios::out);
-    if (!hOutputFile.is_open())
+//    hOutputFile.open(sOutputFilePath.c_str(), std::ios::out);
+//    if (!hOutputFile.is_open())
+//    {
+//        cout << "Text file open error!";
+//        return -1;
+//    }
+
+    // open output wav file
+    CAudioFileIf::create(phAudioFileOutput);
+    phAudioFileOutput->openFile(sOutputFilePath, CAudioFileIf::kFileWrite, &stFileSpec);
+    if (!phAudioFileOutput->isOpen())
     {
-        cout << "Text file open error!";
+        cout << "Output wave file open error!";
         return -1;
     }
-
     //////////////////////////////////////////////////////////////////////////////
     // allocate memory
     ppfAudioData = new float*[stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
         ppfAudioData[i] = new float[kBlockSize];
 
+    ppfAudioOutput = new float*[stFileSpec.iNumChannels];
+    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+        ppfAudioOutput[i] = new float[kBlockSize];
+
     time = clock();
+    
+    pVibrato = new Vibrato(stFileSpec.Num_channels, stFileSpec.Sample_rate, delay_sec, width_sec, mod_freq_Hz);
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
     while (!phAudioFile->isEof())
     {
         long long iNumFrames = kBlockSize;
         phAudioFile->readData(ppfAudioData, iNumFrames);
+        
+        pVibrato->process(ppfAudioData, ppfAudioOutputData, iNumFrames);
 
         cout << "\r" << "reading and writing";
 
