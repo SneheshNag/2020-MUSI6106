@@ -5,6 +5,8 @@
 #include "MUSI6106Config.h"
 
 #include "AudioFileIf.h"
+#include "Fft.h"
+#include "RingBuffer.h"
 //#include "CombFilterIf.h"
 
 using std::cout;
@@ -29,6 +31,11 @@ int main(int argc, char* argv[])
     CAudioFileIf            *phAudioFile = 0;
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
+    CFft                    *pCFft = 0;
+    CRingBuffer<float>      *pCRingBuffer = nullptr;
+    
+    int BlockLength;
+    int HopLength;
 
     //CCombFilterIf   *pInstance = 0;
     //CCombFilterIf::create(pInstance);
@@ -45,6 +52,9 @@ int main(int argc, char* argv[])
     {
         sInputFilePath = argv[1];
         sOutputFilePath = sInputFilePath + ".txt";
+        BlockLength = atof(argv[2]);
+        HopLength = atof(argv[3]);
+        
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -57,6 +67,11 @@ int main(int argc, char* argv[])
         return -1;
     }
     phAudioFile->getFileSpec(stFileSpec);
+    
+    // Create FFT
+    CFft::createInstance(pCFft);
+    
+
 
     //////////////////////////////////////////////////////////////////////////////
     // open the output text file
@@ -71,9 +86,11 @@ int main(int argc, char* argv[])
     // allocate memory
     ppfAudioData = new float*[stFileSpec.iNumChannels];
     for (int i = 0; i < stFileSpec.iNumChannels; i++)
-        ppfAudioData[i] = new float[kBlockSize];
+        ppfAudioData[i] = new float[BlockLength];
 
     time = clock();
+    
+    pCRingBuffer = new CRingBuffer<float>(BlockLength);
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
     while (!phAudioFile->isEof())
