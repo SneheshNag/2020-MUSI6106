@@ -16,19 +16,19 @@
 class CLfo
 {
 public:
-    CLfo(float fSampleRate, float fWidthInSec, float fFrequency) :
+    CLfo(float Sample_rate, float Width_sec, float Freq_Hz) :
     m_pRingBuffer(0),
-    m_fSampleRate(fSampleRate),
-    m_iBufferLength(int(fSampleRate)),
+    m_fSampleRate(Sample_rate),
+    m_iBufferLength(int(Sample_rate)),
     m_fReadIdx(0),
-    m_fWidthInSec(fWidthInSec),
-    m_fFrequency(fFrequency)
+    m_Width_sec(Width_sec),
+    m_Freq_Hz(Freq_Hz)
     {
         m_pRingBuffer = new CRingBuffer<float>(m_iBufferLength);
-        float *pSineBuffer = new float [m_iBufferLength];
-        CSynthesis::generateSine(pSineBuffer, 1.f, 1.f*m_iBufferLength, m_iBufferLength);
-        m_pRingBuffer->put(pSineBuffer, m_iBufferLength);
-        delete [] pSineBuffer;
+        float *pWavetable = new float [m_iBufferLength];
+        CSynthesis::generateSine(pWavetable, 1.f, 1.f*m_iBufferLength, m_iBufferLength);
+        m_pRingBuffer->put(pWavetable, m_iBufferLength);
+        delete [] pWavetable;
     }
     
     ~CLfo()
@@ -38,8 +38,8 @@ public:
     
     float getNextVal()
     {
-        float fVal = m_fWidthInSec * m_fSampleRate * m_pRingBuffer->get(m_fReadIdx);
-        float fReadIdxNext = m_fReadIdx + m_fFrequency / m_fSampleRate * m_iBufferLength;
+        float fVal = m_Width_sec * m_fSampleRate * m_pRingBuffer->get(m_fReadIdx);
+        float fReadIdxNext = m_fReadIdx + m_Freq_Hz / m_fSampleRate * m_iBufferLength;
         if(fReadIdxNext >= m_iBufferLength)
             m_fReadIdx = fReadIdxNext - m_iBufferLength;
         else
@@ -54,8 +54,8 @@ private:
     float               m_fSampleRate;
     int                 m_iBufferLength;
     float               m_fReadIdx;
-    float               m_fWidthInSec;
-    float               m_fFrequency;
+    float               m_Width_sec;
+    float               m_Freq_Hz;
     
 };
 
