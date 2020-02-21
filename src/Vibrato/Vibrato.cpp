@@ -19,10 +19,6 @@ m_pCLfo(0)
     this->reset ();
 }
 
-Vibrato::~Vibrato ()
-{
-    this->reset ();
-}
 
 Error_t Vibrato::create (Vibrato*& pCVibrato)
 {
@@ -49,16 +45,18 @@ Error_t Vibrato::destroy (Vibrato*& pCVibrato)
 
 Error_t Vibrato::init (float Max_width_sec, float Sample_Rate, int iNumChannels)
 {
+    reset();
+    
     m_fSampleRate = Sample_Rate;
     m_iNumChannels = iNumChannels;
     m_max_width = Max_width_sec;
-    int iMaxWidthInSample = CUtil::float2int<int>(m_max_width * m_fSampleRate);
+    int Max_width_samples = CUtil::float2int<int>(m_max_width * m_fSampleRate);
     
     m_ppCRingBuffer = new CRingBuffer<float>*[m_iNumChannels];
     for(int i=0; i<iNumChannels; i++)
     {
-        m_ppCRingBuffer[i] = new CRingBuffer<float>(iMaxWidthInSample*2+1);
-        m_ppCRingBuffer[i]->setWriteIdx(iMaxWidthInSample);
+        m_ppCRingBuffer[i] = new CRingBuffer<float>(Max_width_samples*2+1);
+        m_ppCRingBuffer[i]->setWriteIdx(Max_width_samples);
     }
     
     m_bIsInitialized = true;
@@ -68,7 +66,7 @@ Error_t Vibrato::init (float Max_width_sec, float Sample_Rate, int iNumChannels)
 
 Error_t Vibrato::initLfo ()
 {
-    m_pCLfo = new Clfo(m_fSampleRate, m_width_sec , m_freq_Hz);
+    m_pCLfo = new CLfo(m_fSampleRate, m_width_sec , m_freq_Hz);
     return kNoError;
 }
 
@@ -87,6 +85,7 @@ Error_t Vibrato::reset ()
     m_width_sec = 0;
     m_freq_Hz = 0;
     m_max_width = 0;
+    m_delay_sec = 0;
     
     m_bIsInitialized = false;
     
@@ -101,7 +100,9 @@ Error_t Vibrato::setParam (param_list eParam, float fParamValue)
     switch (eParam)
     {
         case delay:
-            
+            m_delay_sec = fParamValue;
+            if (m_delay_sec < 0 || m_delay_sec > m_max_width)
+                return kFunctionInvalidArgsError;
         case width:
             m_width_sec = fParamValue;
             if(m_width_sec>m_max_width){
@@ -134,7 +135,7 @@ Error_t Vibrato::process (float **ppfInputBuffer, float **ppfOutputBuffer, int i
 {
     for(int i=0; i<iNumberOfFrames; i++)
     {
-        float fOffset = m_pCLfo->getNextSample();
+        float fOffset = m_pCLfo->getNextVal();
         for (int j=0; j<m_iNumChannels; j++)
         {
             m_ppCRingBuffer[j]->putPostInc(ppfInputBuffer[j][i]);

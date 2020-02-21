@@ -31,6 +31,8 @@ public:
     
     Error_t init (float Max_width_sec, float Sample_Rate, int iNumChannels);
     
+    Error_t initLfo ();
+    
     Error_t reset ();
     
 
@@ -52,13 +54,13 @@ private:
     
     float               m_fSampleRate;
     int                 m_iNumChannels;
-    
+    float               m_delay_sec;
     float               m_width_sec;
     float               m_freq_Hz;
     float               m_max_width;
     
     CRingBuffer<float>  **m_ppCRingBuffer;
-    Clfo                *m_pCLfo;
+    CLfo                *m_pCLfo;
 
 };
 

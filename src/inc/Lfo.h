@@ -9,40 +9,53 @@
 #define Lfo_h
 
 
+#include "ErrorDef.h"
 #include "RingBuffer.h"
 #include "Synthesis.h"
-#include "ErrorDef.h"
 
-class Clfo {
-    
+class CLfo
+{
 public:
-
+    CLfo(float fSampleRate, float fWidthInSec, float fFrequency) :
+    m_pRingBuffer(0),
+    m_fSampleRate(fSampleRate),
+    m_iBufferLength(int(fSampleRate)),
+    m_fReadIdx(0),
+    m_fWidthInSec(fWidthInSec),
+    m_fFrequency(fFrequency)
+    {
+        m_pRingBuffer = new CRingBuffer<float>(m_iBufferLength);
+        float *pSineBuffer = new float [m_iBufferLength];
+        CSynthesis::generateSine(pSineBuffer, 1.f, 1.f*m_iBufferLength, m_iBufferLength);
+        m_pRingBuffer->put(pSineBuffer, m_iBufferLength);
+        delete [] pSineBuffer;
+    }
     
-    Clfo (int table_size);
+    ~CLfo()
+    {
+        delete m_pRingBuffer;
+    }
     
-    ~Clfo();
+    float getNextVal()
+    {
+        float fVal = m_fWidthInSec * m_fSampleRate * m_pRingBuffer->get(m_fReadIdx);
+        float fReadIdxNext = m_fReadIdx + m_fFrequency / m_fSampleRate * m_iBufferLength;
+        if(fReadIdxNext >= m_iBufferLength)
+            m_fReadIdx = fReadIdxNext - m_iBufferLength;
+        else
+            m_fReadIdx = fReadIdxNext;
+        
+        return fVal;
+    }
     
-    Error_t init(float Sample_Rate, float Freq_Hz);
-    
-    
-    Error_t setSamplingRate(int Sample_Rate);
-    int getSamplingRate() const;
-    
-    Error_t setFrequency(float Freq_Hz);
-    float getFrequency() const;
-    
-    float getPhase() const;
-    float getCurrentIndex() const;
-    float getNextSample();
-    Error_t updateWavetable();
     
 private:
-    CRingBuffer<float>* m_pWavetable;
-    int m_Table_size;
-    int m_Sample_Rate;
-    float m_Freq_Hz;
-    float m_Phase;
-    float m_Current_index;
+    CRingBuffer<float>  *m_pRingBuffer;
+    float               m_fSampleRate;
+    int                 m_iBufferLength;
+    float               m_fReadIdx;
+    float               m_fWidthInSec;
+    float               m_fFrequency;
     
 };
 

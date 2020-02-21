@@ -6,7 +6,8 @@
 #include <algorithm>
 
 #include "UnitTest++.h"
-
+#include "Synthesis.h"
+#include "Vector.h"
 
 #include "Vibrato.h"
 

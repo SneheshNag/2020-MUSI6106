@@ -104,8 +104,10 @@ int main(int argc, char* argv[])
 //    pVibrato = new Vibrato(stFileSpec.iNumChannels, stFileSpec.fSampleRateInHz, delay_sec, width_sec, mod_freq_Hz);
     Vibrato::create(pVibrato);
     pVibrato->init(delay_sec, stFileSpec.fSampleRateInHz, stFileSpec.iNumChannels);
+    pVibrato->setParam(Vibrato::delay, delay_sec);
     pVibrato->setParam(Vibrato::width, width_sec);
     pVibrato->setParam(Vibrato::mod_freq, mod_freq_Hz);
+    pVibrato->initLfo();
 //    pVibrato->initLfo();
     //////////////////////////////////////////////////////////////////////////////
     // get audio data and write it to the output file
