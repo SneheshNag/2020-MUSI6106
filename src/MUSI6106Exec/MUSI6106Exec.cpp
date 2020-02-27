@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     CAudioFileIf            *phAudioFile = 0;
     std::fstream            hOutputFile;
     CAudioFileIf::FileSpec_t stFileSpec;
-    Vibrato                 *pVibrato = 0;
+    Vibrato                 *pVibrato;
     
     float delay_sec;
     float width_sec;
@@ -119,15 +119,17 @@ int main(int argc, char* argv[])
         pVibrato->process(ppfAudioData, ppfAudioOutput, iNumFrames);
 
         cout << "\r" << "reading and writing";
+        
+        phAudioFileOutput->writeData(ppfAudioOutput, iNumFrames);
 
-        for (int i = 0; i < iNumFrames; i++)
-        {
-            for (int c = 0; c < stFileSpec.iNumChannels; c++)
-            {
-                hOutputFile << ppfAudioData[c][i] << "\t";
-            }
-            hOutputFile << endl;
-        }
+//        for (int i = 0; i < iNumFrames; i++)
+//        {
+//            for (int c = 0; c < stFileSpec.iNumChannels; c++)
+//            {
+//                hOutputFile << ppfAudioData[c][i] << "\t";
+//            }
+//            hOutputFile << endl;
+//        }
     }
 
     cout << "\nreading/writing done in: \t" << (clock() - time)*1.F / CLOCKS_PER_SEC << " seconds." << endl;
@@ -135,14 +137,16 @@ int main(int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////////////
     // clean-up
     CAudioFileIf::destroy(phAudioFile);
-    hOutputFile.close();
-
-    for (int i = 0; i < stFileSpec.iNumChannels; i++)
+    CAudioFileIf::destroy(phAudioFileOutput);
+    Vibrato::destroy(pVibrato);
+    for (int i = 0; i < stFileSpec.iNumChannels; i++) {
         delete[] ppfAudioData[i];
+        delete[] ppfAudioOutput[i];
+    }
     delete[] ppfAudioData;
-    ppfAudioData = 0;
-
-    return 0;
+    delete[] ppfAudioOutput;
+    ppfAudioData = nullptr;
+    ppfAudioOutput = nullptr;
 
 }
 

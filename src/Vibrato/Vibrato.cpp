@@ -19,6 +19,10 @@ m_pCLfo(0)
     this->reset ();
 }
 
+Vibrato::~Vibrato ()
+{
+    this->reset ();
+}
 
 Error_t Vibrato::create (Vibrato*& pCVibrato)
 {

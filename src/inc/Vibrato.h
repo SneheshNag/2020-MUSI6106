@@ -25,6 +25,7 @@ public:
     
 //    ~Vibrato (void) {};
     
+    
     static Error_t create (Vibrato*& pVibrato);
     
     static Error_t destroy (Vibrato*& pVibrato);
@@ -45,7 +46,8 @@ public:
     
 protected:
     Vibrato ();
-    virtual ~Vibrato () {};
+    virtual ~Vibrato ();
+    
     
 private:
 
